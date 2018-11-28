@@ -4,6 +4,7 @@
 新公司采用gitlab基于cordova，通过前端进行需求开发，再由原生慢慢开发进行替换，因为之前没有接触过git、cordova和app开发，所以总结一下方便回顾
 
 一、环境
+
 1.安装：iterm/oh my zsh/cordova/cordova热更新cli/xcode
 2.git clone 项目
   进入对应文件夹 yarn install
@@ -13,7 +14,12 @@
   cordova platform add android
 3.安卓记得安装JDK android studio并配置
 
+参考链接：
+		https://blog.csdn.net/csdn100861/article/details/78585333		cordova入门
+		https://segmentfault.com/a/1190000014992947			iterm2 + oh my zsh配置
+
 二、git常用命令
+
 提交系列：
   gst 查看改动文件
   git diff [src]  查看具体文件的变动
@@ -37,6 +43,7 @@
   git push origin --delete 远程分支名
   
 三、模拟调试
+
 1.iOS
   打开.xcworkspace，会默认用xcode打开
   找iOS原生开发的同事，配置xcode证书，配置成功后除非删除项目，即使remove platform后再 add platform，也不需要重新配置证书，但是一些选项的修改需要重新设置。
@@ -44,10 +51,40 @@
   （2）或 点击小三角在手机上运行（保持iphone解锁状态）
   （3）手机上 设置-> Safari浏览器 -> 高级 -> JavaScript和Web检查器均打开
   （4）电脑上 Safari浏览器 -> 开发，选择相应的设备和项目进行调试
+  
 2.Android
   cordova build android 生成apk包
   cordova run android 在手机上运行
+  
+四、UI兼容方面
 
+1.ios的scroll滑动问题
+在ios中表单页滑动不流畅 -> -webkit-overflow-scrolling
+-webkit-overflow-scrolling造成滑动时有白屏 -> 
+.form-item {
+  &:not(.upload) {
+     -webkit-transform: translateZ(0px);
+  }
+}
+
+2.dialog被遮罩层罩住
+添加属性 :modal-append-to-body='false'
+
+3.滑动穿透问题
+方案1：添加属性 @touchmove.prevent
+方案2：若方案一无效，采取动态判断给父元素添加属性unscroll
+（打开dialog时有，关闭后去掉）
+        .unscroll{
+            position: fixed;
+            top: calc(#{$topBackHeight} + #{$topSpace});
+            height: calc(100vh - #{$topBackHeight} - #{$topSpace});
+            overflow: hidden;
+        }
+	（注意样式的优先级，要大，最重要的是overflow）
+
+4.上方的topSpace
+iOS、iPhone X、android分别不同，参考分别为20px、44px、0px
+同时需配合变化的还有页面剩余部分的高度
 
 
 
