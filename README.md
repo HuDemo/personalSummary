@@ -145,6 +145,145 @@ iOS、iPhone X、android分别不同，参考分别为20px、44px、0px
 
 兼容iPhone X 还要注意的一点是：如果页面底部有按钮，一定要避开最下面的感应键，或者给底部按钮足够的高度，否则很容易造成点击底部按钮唤醒感应键的问题。
 
+五、物理返回
+
+因为app有Android和iOS两种，所以会涉及到安卓手机的物理返回键问题。
+
+常规来讲，用前端写的app，点击物理返回键时会返回上一页面，但是当我们在页面A跳到页面B，在页面B打开了一些弹窗来显示提示操作或者协议等等时，用户点击物理返回键是不应当返回上一页面的，而是应该关闭当前页面的弹窗，页面维持在B不动。
+
+我个人觉得在vue项目中，可以用beforeRouteEnter钩子和localStorage搭配实现，亲测好用。
+
+1.在弹窗出现时：
+localStorage.setItem('标识名',true);
+
+2.在弹窗被正常关闭时（例如点击其他地方关闭，点击确认按钮关闭，点击✘号关闭等）：
+localStorage.removeItem('标识名');
+
+3.钩子函数
+
+	beforeRouteEnter(to,from,next){
+
+		if(localStorage.getItem('标识名A')){
+
+			next(false);
+
+			localStorage.removeItem('标识名');
+
+			return;
+
+		} else if (localStorage.getItem('标识名B')){
+
+			console.log('关闭弹窗');
+
+			next(false);
+
+			this.removeDialog();
+
+			return;
+
+		}
+
+		next();
+	
+	}
+
+这里代码是当页面有两个可弹出的弹窗时，判断localstorage里面是否有这两个标识名，如果没有，注意！一定要有正常情况下的next()，否则无弹窗的正常退回也会失效。而如果检测到有标识名，一定要有return！不然还是会走next()。
+
+另外，鉴于用户使用app时，并不能像网页一样看到console.log，而且每当代码有改动时都要重新打包或者热更新来查看变化比较麻烦，可以在打包前在每个位置加上console.log，便于调试修改，过后酌情删掉。
+
+六、常用的表单验证
+
+app内经常有表单填写页面，提交时需要对数据进行校验，整理了几个常用的校验方便以后使用：
+
+1.验证必填项
+
+	let must = opt => {
+		if (isEmptyArray(opt.val) || opt.val === '' || opt.val === null) {
+			return {
+				text: `“${opt.text}”为必填项！`,
+				flag: false
+			};
+		} else {
+			return {
+				flag: true
+			};
+		}
+	};
+
+2.验证金额为两位小数且大于0
+
+	let checkNumber = opt => {
+		if (!/^(([1-9][0-9]*)|0)(\.[0-9]{1,2})?$/.test(opt.val)) {
+			return {
+				text: `“${opt.text}”限制为两位小数！`,
+				flag: false
+			};
+		}else{
+			return {
+				flag: true
+			};
+		}
+	};
+
+3.验证车辆数目为正整数
+
+	let checkInteger = opt => {
+		if(!/^[1-9]+\d*$/.test(opt.val)){
+			return {
+				text: `“${opt.text}”限制为正整数！`,
+				flag: false
+			};
+		}else{
+			return {
+				flag: true
+			};
+		}
+	};
+
+4.验证金额价格在指定范围内
+
+	let checkGuaNumber = opt => {
+		if (!/^([1-9]\d*|[0]{1,1})$/.test(opt.val)) {
+			return {
+				text: `“${opt.text}”限制为含0正整数！`,
+				flag: false
+			};
+		} else if(opt.val < 价格边界1 || opt.val > 价格边界2) {
+			return {
+				text: `请修改价格在m%-n%才能发布！`,
+				flag: false
+			};
+		}else{
+			return {
+				flag: true
+			};
+		}
+	};
+
+=》使用时
+
+	formData: {
+		product_time: {
+			val: '',
+			rules: must,
+			text: '生产日期'
+		}
+  	}
+
+七、判断机型为安卓/iPhone/iPad
+
+	export function curEnv () {
+		const userAgentInfo = navigator.userAgent.toLocaleLowerCase();
+		if (userAgentInfo.indexOf('ipad') > -1) {
+			return 'iPad';
+		} else if (userAgentInfo.indexOf('iphone') > -1) {
+			return 'iPhone';
+		} else if (userAgentInfo.indexOf('android') > -1) {
+			return 'android';
+		} else {
+			return '';
+		}
+	};
 
 
 
@@ -153,4 +292,5 @@ iOS、iPhone X、android分别不同，参考分别为20px、44px、0px
 
 
 
-  
+
+
